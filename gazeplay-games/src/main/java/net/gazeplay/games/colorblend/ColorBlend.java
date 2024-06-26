@@ -28,7 +28,11 @@ import javafx.geometry.Insets;
 /**
  * Choose between multiple colors and blend them together
  *
- * @author Yanis HARKATI
+ * This class implements a color blending game where users can select and mix colors.
+ *
+ * @version 1.0
+ *
+ * author Yanis HARKATI
  */
 @Slf4j
 public class ColorBlend implements GameLifeCycle {
@@ -59,11 +63,11 @@ public class ColorBlend implements GameLifeCycle {
 
     @Override
     public void dispose() {
-
+        // Dispose resources if needed (empty implementation in this example)
     }
 
     /**
-     * Apply background
+     * Apply background image to the game scene.
      */
     private void createBackground() {
         Background background = new Background(new BackgroundImage(
@@ -75,22 +79,20 @@ public class ColorBlend implements GameLifeCycle {
     }
 
     /**
-     * Create the palette of colors
+     * Create the palette of colors and layout the UI elements.
      */
     private void createPalette() {
-
         double screenWidth = Screen.getPrimary().getVisualBounds().getWidth();
         double screenHeight = Screen.getPrimary().getVisualBounds().getHeight();
 
-        // Définir la taille de la palette en pourcentage de la taille de la fenêtre
-        double paletteWidthPercentage = 0.12; // 12% de la largeur de l'écran
-        double paletteHeightPercentage = 0.65; // 65% de la hauteur de l'écran
+        // Define the size of the palette as a percentage of the screen size
+        double paletteWidthPercentage = 0.12; // 12% of the screen width
+        double paletteHeightPercentage = 0.65; // 65% of the screen height
 
         double paletteWidth = screenWidth * paletteWidthPercentage;
         double paletteHeight = screenHeight * paletteHeightPercentage;
 
-
-        //Create colors
+        // Create color rectangles
         Rectangle[] colors = {
             createColorRectangle(Color.RED),
             createColorRectangle(Color.ORANGE),
@@ -104,32 +106,32 @@ public class ColorBlend implements GameLifeCycle {
             createColorRectangle(Color.YELLOW)
         };
 
+        // Add click event handlers to color rectangles
         for (Rectangle color : colors) {
             color.setOnMouseClicked(mouseEvent -> handleColorClick(color));
         }
 
-        // Création de la grille pour disposer les rectangles par paires
+        // Create a grid to arrange the color rectangles in pairs
         GridPane colorGrid = new GridPane();
         colorGrid.setPadding(new Insets(20));
         colorGrid.setHgap(25);
         colorGrid.setVgap(25);
 
-        // Ajout des rectangles de couleur à la grille par paires
+        // Add color rectangles to the grid in pairs
         for (int i = 0; i < colors.length; i += 2) {
             colorGrid.addRow(i / 2, colors[i], colors[i + 1]);
         }
 
-        Rectangle paletteRectangle = createPaletteRectangle(paletteWidth,paletteHeight);
+        Rectangle paletteRectangle = createPaletteRectangle(paletteWidth, paletteHeight);
 
-        //Glass image
+        // Create the reset button with an image
         Image resetImage = new Image("data/colorblend/images/glass.png");
         ImageView imageView = new ImageView(resetImage);
 
-        double glassWidthPercentage = 0.05; // 5% de la largeur de l'écran
-        double glassHeightPercentage = 0.10; // 10% de la hauteur de l'écran
+        double glassWidthPercentage = 0.05; // 5% of the screen width
+        double glassHeightPercentage = 0.10; // 10% of the screen height
 
-
-        imageView.setFitWidth(screenWidth * glassWidthPercentage); // Taille de l'image
+        imageView.setFitWidth(screenWidth * glassWidthPercentage); // Set image size
         imageView.setFitHeight(screenHeight * glassHeightPercentage);
 
         // Reset button with glass image on it
@@ -143,47 +145,50 @@ public class ColorBlend implements GameLifeCycle {
 
         buttonBox.setAlignment(Pos.CENTER);
 
-
-        // Putting, palette, colorgrid in the same stackpane
+        // Combine palette, color grid, and reset button in a single layout
         StackPane root = new StackPane(paletteRectangle, colorGrid);
-
         HBox container = new HBox(root, buttonBox, this.progressIndicator);
-        container.setAlignment(Pos.CENTER); // Alignement du conteneur au centre
+        container.setAlignment(Pos.CENTER); // Center align the container
 
-        // Création de la scène
+        // Add the container to the game scene
         gameContext.getChildren().add(container);
     }
 
     /**
-     * Create a rectangle for a color
-     * @param color the color used
-     * @return a Rectangle Object used for choosing color
+     * Create a rectangle for a color.
+     *
+     * @param color the color to fill the rectangle with
+     * @return a Rectangle object used for choosing color
      */
     private Rectangle createColorRectangle(Color color) {
-
         double screenWidth = Screen.getPrimary().getVisualBounds().getWidth();
         double screenHeight = Screen.getPrimary().getVisualBounds().getHeight();
 
-        // Définir la taille de la palette en pourcentage de la taille de la fenêtre
-        double rectangleWidthPercentage = 0.05; // 5% de la largeur de l'écran
-        double rectangleHeightPercentage = 0.10; // 10% de la hauteur de l'écran
+        // Define the size of the rectangle as a percentage of the screen size
+        double rectangleWidthPercentage = 0.05; // 5% of the screen width
+        double rectangleHeightPercentage = 0.10; // 10% of the screen height
 
-        Rectangle rectangle = new Rectangle(screenWidth* rectangleWidthPercentage, screenHeight* rectangleHeightPercentage);
+        Rectangle rectangle = new Rectangle(screenWidth * rectangleWidthPercentage, screenHeight * rectangleHeightPercentage);
         rectangle.setFill(color);
         rectangle.setStroke(color.darker());
         rectangle.setStrokeWidth(1);
 
         this.progressIndicator = createProgressIndicator(rectangle);
 
+        // Add event filters for gaze and mouse interactions
         rectangle.addEventFilter(MouseEvent.ANY, rectangleBuildEvent(rectangle));
         rectangle.addEventFilter(GazeEvent.ANY, rectangleBuildEvent(rectangle));
 
         return rectangle;
     }
 
+    /**
+     * Build event handler for color rectangle interactions.
+     */
     private EventHandler<Event> rectangleBuildEvent(final Rectangle rectangle) {
         return e -> {
             if (e.getEventType() == MouseEvent.MOUSE_ENTERED || e.getEventType() == GazeEvent.GAZE_ENTERED) {
+                // Handle gaze or mouse entered events
                 timelineProgressBar = new Timeline();
                 timelineProgressBar.getKeyFrames().add(new KeyFrame(new Duration(gameContext.getConfiguration().getFixationLength()),
                     new KeyValue(progressIndicator.progressProperty(), 1)));
@@ -199,18 +204,23 @@ public class ColorBlend implements GameLifeCycle {
 
                 timelineProgressBar.play();
             } else if (e.getEventType() == MouseEvent.MOUSE_EXITED || e.getEventType() == GazeEvent.GAZE_EXITED) {
+                // Handle gaze or mouse exited events
                 timelineProgressBar.stop();
                 progressIndicator.setOpacity(0);
                 progressIndicator.setProgress(0);
-                //Avoid event calling on it
+                // Avoid event calling on it
                 progressIndicator.setMouseTransparent(true);
             }
         };
     }
 
+    /**
+     * Build event handler for reset button interactions.
+     */
     private EventHandler<Event> resetBuildEvent(HBox buttonBox) {
         return e -> {
             if (e.getEventType() == MouseEvent.MOUSE_ENTERED || e.getEventType() == GazeEvent.GAZE_ENTERED) {
+                // Handle gaze or mouse entered events for reset button
                 timelineProgressBar = new Timeline();
                 timelineProgressBar.getKeyFrames().add(new KeyFrame(new Duration(gameContext.getConfiguration().getFixationLength()),
                     new KeyValue(progressIndicator.progressProperty(), 1)));
@@ -221,21 +231,28 @@ public class ColorBlend implements GameLifeCycle {
                 progressIndicator.setOpacity(1);
                 progressIndicator.setProgress(0);
 
-                // Lier les propriétés layoutX et layoutY du ProgressIndicator à celles du conteneur du bouton
+                // Bind layoutX and layoutY properties of the ProgressIndicator to the button box
                 progressIndicator.layoutXProperty().bind(buttonBox.layoutXProperty().add(buttonBox.getWidth() / 2).subtract(progressIndicator.getMinWidth() / 2));
                 progressIndicator.layoutYProperty().bind(buttonBox.layoutYProperty().add(buttonBox.getHeight() / 2).subtract(progressIndicator.getMinHeight() / 2));
 
                 timelineProgressBar.play();
             } else if (e.getEventType() == MouseEvent.MOUSE_EXITED || e.getEventType() == GazeEvent.GAZE_EXITED) {
+                // Handle gaze or mouse exited events for reset button
                 timelineProgressBar.stop();
                 progressIndicator.setOpacity(0);
                 progressIndicator.setProgress(0);
-                // Empêcher les événements de souris d'être capturés par le ProgressIndicator
+                // Prevent mouse events from being captured by the ProgressIndicator
                 progressIndicator.setMouseTransparent(true);
             }
         };
     }
 
+    /**
+     * Create a progress indicator for a given rectangle.
+     *
+     * @param rectangle the rectangle to attach the progress indicator to
+     * @return a new ProgressIndicator object
+     */
     private ProgressIndicator createProgressIndicator(final Rectangle rectangle) {
         final ProgressIndicator indicator = new ProgressIndicator(0);
         indicator.setMinWidth(rectangle.getWidth() / 2);
@@ -244,6 +261,13 @@ public class ColorBlend implements GameLifeCycle {
         return indicator;
     }
 
+    /**
+     * Create a rectangle to represent the color palette.
+     *
+     * @param width the width of the rectangle
+     * @param height the height of the rectangle
+     * @return a new Rectangle object
+     */
     private Rectangle createPaletteRectangle(double width, double height) {
         Rectangle rectangle = new Rectangle(width, height);
         rectangle.setFill(Color.BEIGE);
@@ -252,10 +276,15 @@ public class ColorBlend implements GameLifeCycle {
         return rectangle;
     }
 
+    /**
+     * Handle click event on a color rectangle.
+     *
+     * @param color the color rectangle that was clicked
+     */
     private void handleColorClick(Rectangle color) {
         if (this.color1 == null) {
             this.color1 = color.getFill();
-            this.circle = createCirle();
+            this.circle = createCircle();
             this.circle.setFill(this.color1);
         } else {
             this.color2 = color.getFill();
@@ -264,23 +293,25 @@ public class ColorBlend implements GameLifeCycle {
             this.circle.setFill(newColor);
             this.color1 = newColor;
         }
-
     }
 
+    /**
+     * Handle reset button click event.
+     */
     private void handleReset() {
-        // Réinitialisation des couleurs et du cercle
+        // Reset colors and circle
         color1 = null;
         color2 = null;
         if (circle != null) circle.setFill(null);
     }
 
     /**
-     * Get a blended color from 2 initial colors
+     * Get a blended color from the two selected colors.
      *
      * @return a blended Color object
      */
     private Color blendColors() {
-        //Get the initial R G B elements of colors
+        // Get the initial RGB components of the colors
         Color color1 = (Color) this.color1;
         Color color2 = (Color) this.color2;
 
@@ -297,22 +328,26 @@ public class ColorBlend implements GameLifeCycle {
         double g = (g1 + g2) / 2;
         double b = (b1 + b2) / 2;
 
-        return new Color(r,g,b,1);
+        return new Color(r, g, b, 1);
     }
 
-    private Circle createCirle(){
+    /**
+     * Create a circle to display the blended color.
+     *
+     * @return a new Circle object
+     */
+    private Circle createCircle() {
         Circle circle = new Circle();
         double screenHeight = Screen.getPrimary().getVisualBounds().getHeight();
 
-        // Définir la taille de la palette en pourcentage de la taille de la fenêtre
-        double circleeHeightPercentage = 0.25; // 25% de la hauteur de l'écran
-        circle.setRadius(screenHeight * circleeHeightPercentage);
+        // Define the size of the circle as a percentage of the screen height
+        double circleHeightPercentage = 0.25; // 25% of the screen height
+        circle.setRadius(screenHeight * circleHeightPercentage);
 
         this.gameContext.getRoot().getChildren().add(circle);
 
         circle.centerXProperty().bind(this.gameContext.getRoot().widthProperty().divide(2));
         circle.centerYProperty().bind(this.gameContext.getRoot().heightProperty().divide(2));
-
 
         return circle;
     }
